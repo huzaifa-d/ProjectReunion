@@ -143,7 +143,7 @@ namespace ProjectReunionCppTest
             // Wait for the protocol activation.
             WaitForEvent(event, m_failed);
 
-            Execute(L"AppLifecycleTestApp.exe", L"/RegisterProtocol", g_deploymentDir);
+            Execute(L"AppLifecycleTestApp.exe", L"/UnregisterProtocol", g_deploymentDir);
 
             // Wait for the unregister event.
             WaitForEvent(event, m_failed);
@@ -185,6 +185,8 @@ namespace ProjectReunionCppTest
             auto launchResult = Launcher::LaunchFileAsync(file).get();
             VERIFY_IS_TRUE(launchResult);
 
+            // TODO: Add the unregister work here.
+
             // Wait for the protocol activation.
             WaitForEvent(event, m_failed);
         }
@@ -202,5 +204,35 @@ namespace ProjectReunionCppTest
         //    // Wait for the protocol activation.
         //    WaitForEvent(event, m_failed);
         //}
+
+        TEST_METHOD(GetActivatedEventArgsForStartup_Win32)
+        {
+            // Create a named event for communicating with test app.
+            auto event = CreateTestEvent(c_testStartupPhaseEventName);
+
+            // Launch the test app to register for protocol launches.
+            Execute(L"AppLifecycleTestApp.exe", L"/RegisterStartup", g_deploymentDir);
+
+            // Wait for the register event.
+            WaitForEvent(event, m_failed);
+
+            // Launch a protocol and wait for the event to fire.
+
+            std::wstring uri{ L"ms-launch://this_is_a_test?ContractId=Windows.StartupTask&TaskId=this_is_a_test" };
+            Uri launchUri{ uri };
+            auto launchResult = Launcher::LaunchUriAsync(launchUri).get();
+            VERIFY_IS_TRUE(launchResult);
+
+            // Wait for the protocol activation.
+            WaitForEvent(event, m_failed);
+
+            Execute(L"AppLifecycleTestApp.exe", L"/UnregisterStartup", g_deploymentDir);
+
+            // TODO: Undo this hack once we deserialize args.
+            auto protEvent = CreateTestEvent(c_testStartupPhaseEventName);
+
+            // Wait for the unregister event.
+            WaitForEvent(protEvent, m_failed);
+        }
     };
 }

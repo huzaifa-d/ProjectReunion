@@ -4,6 +4,19 @@
 
 #include <ActivationRegistrationManager.g.h>
 
+enum BlockedItemStatus
+{
+    Blocked = 0x0001,
+    Seen = 0x0002
+};
+DEFINE_ENUM_FLAG_OPERATORS(BlockedItemStatus);
+
+struct BlockedItem
+{
+    BlockedItemStatus flags;
+    FILETIME disabledTime;
+};
+
 namespace winrt::Microsoft::ProjectReunion::implementation
 {
     struct ActivationRegistrationManager
@@ -15,9 +28,11 @@ namespace winrt::Microsoft::ProjectReunion::implementation
             hstring const& logo);
         static void RegisterForProtocolActivation(hstring const& scheme,
             hstring const& applicationDisplayName, hstring const& logo);
+        static void RegisterForStartupActivation(hstring const& taskId, bool isEnabled);
 
         static void UnregisterForFileTypeActivation(hstring const& fileType);
         static void UnregisterForProtocolActivation(hstring const& scheme);
+        static void UnregisterForStartupActivation(hstring const& taskId);
     };
 }
 
