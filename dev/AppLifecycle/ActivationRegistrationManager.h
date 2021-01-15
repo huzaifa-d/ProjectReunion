@@ -10,6 +10,7 @@ namespace winrt::Microsoft::ProjectReunion::implementation
     static const std::wstring c_argumentPrefix = L"----";
     static const std::wstring c_argumentSuffix = L":";
     static const std::wstring c_protocolArgumentString = L"ms-protocol";
+    static const std::wstring c_launchSchemeName = L"ms-launch";
     static const std::wstring c_encodedLaunchSchemeName = L"ms-encodedlaunch";
     static const std::wstring c_runKeyPath = LR"(Software\Microsoft\Windows\CurrentVersion\Run\)";
     static const std::wstring c_startupApprovedKeyPath = LR"(Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run\)";
@@ -41,6 +42,13 @@ namespace winrt::Microsoft::ProjectReunion::implementation
         static void UnregisterForFileTypeActivation(hstring const& fileType);
         static void UnregisterForProtocolActivation(hstring const& scheme);
         static void UnregisterForStartupActivation(hstring const& taskId);
+
+    private:
+        static void RegisterForProtocolActivationInternal(hstring const& scheme,
+            hstring const& appUserModelId, hstring const& applicationDisplayName,
+            hstring const& logo);
+        static void RegisterEncodedLaunchCommand();
+        static void RegisterEncodedLaunchSupport(hstring const& appUserModelId);
     };
 }
 

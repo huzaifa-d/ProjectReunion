@@ -9,6 +9,9 @@
 #include "FileActivatedEventArgs.h"
 #include "Association.h"
 #include "ExtensionContract.h"
+#include "EncodedLaunchExecuteCommand.h"
+
+extern "C" HRESULT __stdcall DllRegisterServer() noexcept;
 
 namespace winrt::Microsoft::ProjectReunion::implementation
 {
@@ -78,19 +81,7 @@ namespace winrt::Microsoft::ProjectReunion::implementation
             throw hresult_illegal_method_call();
         }
 
-        RegisterProtocol(scheme.c_str());
-
-        auto appId = ComputeAppId();
-        auto type = AssociationType::Protocol;
-        auto progId = ComputeProgId(appId, type);
-
-        RegisterProgId(progId.c_str(), L"", applicationDisplayName.c_str(), logo.c_str());
-
-        auto command = GenerateCommandLine(L"") + L"%1";
-        RegisterVerb(progId.c_str(), L"open", command);
-
-        RegisterApplication(appId.c_str());
-        RegisterAssociationHandler(appId, scheme.c_str(), type);
+        RegisterForProtocolActivationInternal(scheme, L"", applicationDisplayName, logo);
     }
 
     void ActivationRegistrationManager::RegisterForStartupActivation(hstring const& taskId,
@@ -185,4 +176,53 @@ namespace winrt::Microsoft::ProjectReunion::implementation
         }
     }
 
+    void ActivationRegistrationManager::RegisterForProtocolActivationInternal(hstring const& scheme,
+        hstring const& appUserModelId, hstring const& applicationDisplayName, hstring const& logo)
+    {
+        if (scheme.empty())
+        {
+            throw hresult_invalid_argument();
+        }
+
+        if (HasIdentity())
+        {
+            throw hresult_illegal_method_call();
+        }
+
+        RegisterProtocol(scheme.c_str());
+
+        auto appId = ComputeAppId();
+        auto type = AssociationType::Protocol;
+        auto progId = ComputeProgId(appId, type);
+
+        RegisterProgId(progId.c_str(), L"", appUserModelId.c_str(), applicationDisplayName.c_str(),
+            logo.c_str());
+
+        auto command = GenerateCommandLine(L"") + L"%1";
+        RegisterVerb(progId.c_str(), c_openVerbName, command);
+
+        RegisterApplication(appId.c_str());
+        RegisterAssociationHandler(appId, scheme.c_str(), type);
+    }
+
+    void ActivationRegistrationManager::RegisterEncodedLaunchCommand()
+    {
+        DllRegisterServer();
+
+        std::wstring scheme = L"ms-launch";
+        RegisterProtocol(scheme);
+
+        auto delegateExecute = __uuidof(EncodedLaunchExecuteCommandFactory);
+        RegisterVerb(scheme, c_openVerbName, L"", &delegateExecute);
+    }
+
+    void ActivationRegistrationManager::RegisterEncodedLaunchSupport(hstring const& appUserModelId)
+    {
+        // Make sure the encoded launch delegate execute command is registered on the system.
+        RegisterEncodedLaunchCommand();
+
+        // Register the current app to receive launch requests.
+        RegisterForProtocolActivationInternal(c_encodedLaunchSchemeName.c_str(), appUserModelId,
+            L"Encoded Launch Target", L"");
+    }
 }

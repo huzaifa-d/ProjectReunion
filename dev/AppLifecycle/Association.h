@@ -10,6 +10,7 @@ namespace winrt::Microsoft::ProjectReunion::implementation
     static const std::wstring c_applicationKeyName = L"Application";
     static const std::wstring c_applicationNameValueName = L"ApplicationName";
     static const std::wstring c_defaultIconKeyName = L"DefaultIcon";
+    static const std::wstring c_appUserModelIdValueName = L"AppUserModelId";
     static const std::wstring c_applicationsKeyPath = LR"(Software\Microsoft\ReunionApplications\)";
     static const std::wstring c_capabilitiesKeyPath = LR"(\Capabilties)";
     static const std::wstring c_registeredApplicationsKeyPath = LR"(Software\RegisteredApplications\)";
@@ -18,6 +19,7 @@ namespace winrt::Microsoft::ProjectReunion::implementation
     static const std::wstring c_delegateExecuteValueName = L"DelegateExecute";
     static const std::wstring c_urlProtocolValueName = L"URL Protocol";
     static const std::wstring c_urlDefaultValuePrefix = L"URL:";
+    static const std::wstring c_openVerbName = L"open";
 
     // ProgId generation values.
     static const std::wstring c_progIdPrefix = L"PRF";
@@ -41,8 +43,9 @@ namespace winrt::Microsoft::ProjectReunion::implementation
     wil::unique_hkey CreateAssocKey(const std::wstring& assoc, REGSAM samDesired = KEY_WRITE);
     wil::unique_hkey OpenAssocKey(const std::wstring& assoc, REGSAM samDesired = KEY_READ);
     void DeleteAssocKey(const std::wstring& assoc);
-    wil::unique_hkey RegisterProgId(const std::wstring& progId, const std::wstring& displayName = L"",
-        const std::wstring& applicationDisplayName = L"", const std::wstring& logo = L"");
+    wil::unique_hkey RegisterProgId(const std::wstring& progId, const std::wstring& defaultValue = L"",
+        const std::wstring& appUserModelId = L"", const std::wstring& applicationDisplayName = L"",
+        const std::wstring& logo = L"");
     void UnregisterProgId(const std::wstring& progId);
     std::wstring CreateApplicationKeyPath();
     wil::unique_hkey CreateApplicationKey(const std::wstring& progId, REGSAM samDesired = KEY_WRITE);
