@@ -4,21 +4,29 @@
 
 #include <ActivationRegistrationManager.g.h>
 
-enum BlockedItemStatus
-{
-    Blocked = 0x0001,
-    Seen = 0x0002
-};
-DEFINE_ENUM_FLAG_OPERATORS(BlockedItemStatus);
-
-struct BlockedItem
-{
-    BlockedItemStatus flags;
-    FILETIME disabledTime;
-};
-
 namespace winrt::Microsoft::ProjectReunion::implementation
 {
+    // Registration constant values.
+    static const std::wstring c_argumentPrefix = L"----";
+    static const std::wstring c_argumentSuffix = L":";
+    static const std::wstring c_protocolArgumentString = L"ms-protocol";
+    static const std::wstring c_encodedLaunchSchemeName = L"ms-encodedlaunch";
+    static const std::wstring c_runKeyPath = LR"(Software\Microsoft\Windows\CurrentVersion\Run\)";
+    static const std::wstring c_startupApprovedKeyPath = LR"(Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run\)";
+
+    enum BlockedItemStatus
+    {
+        Blocked = 0x0001,
+        Seen = 0x0002
+    };
+    DEFINE_ENUM_FLAG_OPERATORS(BlockedItemStatus);
+
+    struct BlockedItem
+    {
+        BlockedItemStatus flags;
+        FILETIME disabledTime;
+    };
+
     struct ActivationRegistrationManager
     {
         ActivationRegistrationManager() = default;
