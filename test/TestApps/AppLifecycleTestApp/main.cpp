@@ -144,7 +144,7 @@ int main()
         auto startupArgs = args.as<IStartupTaskActivatedEventArgs>();
         if (startupArgs.TaskId() == L"this_is_a_test")
         {
-            // Signal event that toast was activated.
+            // Signal event that startuptask was activated.
             SignalPhase(c_testStartupPhaseEventName);
             succeeded = true;
         }
