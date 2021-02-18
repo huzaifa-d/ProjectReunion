@@ -36,7 +36,7 @@ namespace winrt::Microsoft::ProjectReunion::implementation
     std::wstring GetFullIdentityString();
     bool HasIdentity();
     std::wstring GetModulePath();
-    std::wstring ComputeAppId();
+    std::wstring ComputeAppId(const std::wstring& customSeed);
     std::wstring ComputeProgId(AssociationType type);
     std::wstring ComputeProgId(const std::wstring& appId, AssociationType type);
     std::wstring CreateAssocKeyPath(const std::wstring& assoc);

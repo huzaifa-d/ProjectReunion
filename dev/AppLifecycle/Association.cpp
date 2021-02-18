@@ -54,13 +54,19 @@ namespace winrt::Microsoft::ProjectReunion::implementation
         return path;
     }
 
-    std::wstring ComputeAppId()
+    std::wstring ComputeAppId(const std::wstring& customSeed)
     {
         // PRF = Project Reunion Framework.  A simple prefix to help identify ProgIds we compute here.
-        // AppId = Prefix + Hash(modulePath)
-        auto modulePath = GetModulePath();
+        // AppId = Prefix + Hash(seed)
+        std::wstring seed = customSeed;
+
+        if (seed.empty())
+        {
+            seed = GetModulePath();
+        }
+
         std::hash<std::wstring> hasher;
-        auto hash = hasher(modulePath);
+        auto hash = hasher(seed);
 ;
         wchar_t hashString[17]{}; // 16 + 1 characters for 64bit value represented as a string with a null terminator.
         THROW_IF_FAILED(StringCchPrintf(hashString, _countof(hashString), L"%I64x", hash));
@@ -71,11 +77,6 @@ namespace winrt::Microsoft::ProjectReunion::implementation
     }
 
     // Compute a stable progId.
-    std::wstring ComputeProgId(AssociationType type)
-    {
-        return ComputeProgId(ComputeAppId(), type);
-    }
-
     std::wstring ComputeProgId(const std::wstring& appId, AssociationType type)
     {
         std::wstring typeSuffix;

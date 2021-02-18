@@ -34,42 +34,78 @@ namespace winrt::Microsoft::ProjectReunion::implementation
     }
 
     void ActivationRegistrationManager::RegisterForFileTypeActivation(
-        array_view<hstring const> supportedFileTypes, array_view<hstring const> supportedVerbs,
-        hstring const& applicationDisplayName, hstring const& logo)
+        array_view<hstring const> supportedFileTypes, hstring const& logo, hstring const& displayName,
+        array_view<hstring const> supportedVerbs, hstring const& exePath)
     {
         if (HasIdentity())
         {
             throw hresult_illegal_method_call();
         }
 
-        auto appId = ComputeAppId();
+        auto appId = ComputeAppId(exePath.c_str());
         auto type = AssociationType::File;
         auto progId = ComputeProgId(appId, type);
 
         if (supportedFileTypes.size())
         {
-            RegisterProgId(progId.c_str(), L"", applicationDisplayName.c_str(), logo.c_str());
+            RegisterProgId(progId.c_str(), L"", displayName.c_str(), logo.c_str());
             RegisterApplication(appId.c_str());
         }
 
-        for (auto extension : supportedFileTypes)
+        for (auto fileType : supportedFileTypes)
         {
-            RegisterFileExtension(extension.c_str());
+            RegisterFileExtension(fileType.c_str());
             
             for (auto verb : supportedVerbs)
             {
-                auto command = GenerateCommandLine(L"") + GenerateEncodedLaunchUri(L"App",
+                auto command = GenerateCommandLine(exePath.c_str()) + GenerateEncodedLaunchUri(L"App",
                     c_fileContractId) + L"&Verb=" + verb.c_str() + L"&File=%1";
 
                 RegisterVerb(progId, verb.c_str(), command);
             }
 
-            RegisterAssociationHandler(appId, extension.c_str(), type);
+            RegisterAssociationHandler(appId, fileType.c_str(), type);
         }
     }
 
-    void ActivationRegistrationManager::RegisterForProtocolActivation(hstring const& scheme,
-        hstring const& applicationDisplayName, hstring const& logo)
+    void ActivationRegistrationManager::UnregisterForFileTypeActivation(array_view<hstring const> fileTypes,
+        hstring const& exePath)
+    {
+        if (HasIdentity())
+        {
+            throw hresult_illegal_method_call();
+        }
+
+        auto appId = ComputeAppId(exePath.c_str());
+        auto type = AssociationType::File;
+        auto progId = ComputeProgId(appId, type);
+
+        for (auto fileType : fileTypes)
+        {
+            UnregisterAssociationHandler(appId, fileType.c_str(), type);
+            UnregisterProgId(progId);
+        }
+    }
+
+    void ActivationRegistrationManager::RegisterForProtocolActivation(hstring const& schemeName,
+        hstring const& logo, hstring const& displayName, hstring const& exePath)
+    {
+        if (schemeName.empty())
+        {
+            throw hresult_invalid_argument();
+        }
+
+        if (HasIdentity())
+        {
+            throw hresult_illegal_method_call();
+        }
+
+        RegisterForProtocolActivationInternal(schemeName.c_str(), L"", logo.c_str(),
+            displayName.c_str(), exePath.c_str());
+    }
+
+    void ActivationRegistrationManager::UnregisterForProtocolActivation(hstring const& scheme,
+        hstring const& exePath)
     {
         if (scheme.empty())
         {
@@ -81,11 +117,15 @@ namespace winrt::Microsoft::ProjectReunion::implementation
             throw hresult_illegal_method_call();
         }
 
-        RegisterForProtocolActivationInternal(scheme, L"", applicationDisplayName, logo);
+        auto appId = ComputeAppId(exePath.c_str());
+        auto type = AssociationType::Protocol;
+        auto progId = ComputeProgId(appId, type);
+        UnregisterAssociationHandler(appId, scheme.c_str(), type);
+        UnregisterProgId(progId);
     }
 
     void ActivationRegistrationManager::RegisterForStartupActivation(hstring const& taskId,
-        bool isEnabled)
+        hstring const& exePath)
     {
         if (HasIdentity())
         {
@@ -98,7 +138,7 @@ namespace winrt::Microsoft::ProjectReunion::implementation
             key.put()));
 
         // Pass a command line that will make sense while constructing the args object.
-        auto command = GenerateCommandLine(L"") + GenerateEncodedLaunchUri(L"App",
+        auto command = GenerateCommandLine(exePath.c_str()) + GenerateEncodedLaunchUri(L"App",
             c_startupTaskContractId) + L"&TaskId=" + taskId;
 
         // Name: taskId
@@ -106,58 +146,6 @@ namespace winrt::Microsoft::ProjectReunion::implementation
         THROW_IF_WIN32_ERROR(::RegSetValueEx(key.get(), taskId.c_str(), 0, REG_SZ,
             reinterpret_cast<BYTE const*>(command.c_str()),
             static_cast<uint32_t>((command.size() + 1) * sizeof(wchar_t))));
-
-        if (!isEnabled)
-        {
-            // The enabled state is the system default, and so we only write out data
-            // in the case of disabled.
-            BlockedItem itemState{};
-
-            itemState.flags = BlockedItemStatus::Blocked | BlockedItemStatus::Seen;
-            ::GetSystemTimeAsFileTime(&itemState.disabledTime);
-
-            // Example: HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run
-            wil::unique_hkey approvedKey;
-            THROW_IF_WIN32_ERROR(::RegOpenKeyEx(HKEY_CURRENT_USER, c_startupApprovedKeyPath.c_str(),
-                0, KEY_WRITE, approvedKey.put()));
-
-            THROW_IF_WIN32_ERROR(::RegSetValueEx(approvedKey.get(), taskId.c_str(), 0, REG_BINARY,
-                reinterpret_cast<BYTE const*>(&itemState),
-                sizeof(BlockedItem)));
-        }
-    }
-
-    void ActivationRegistrationManager::UnregisterForFileTypeActivation(hstring const& fileType)
-    {
-        if (HasIdentity())
-        {
-            throw hresult_illegal_method_call();
-        }
-
-        auto appId = ComputeAppId();
-        auto type = AssociationType::File;
-        auto progId = ComputeProgId(appId, type);
-        UnregisterAssociationHandler(appId, fileType.c_str(), type);
-        UnregisterProgId(progId);
-    }
-
-    void ActivationRegistrationManager::UnregisterForProtocolActivation(hstring const& scheme)
-    {
-        if (scheme.empty())
-        {
-            throw hresult_invalid_argument();
-        }
-
-        if (HasIdentity())
-        {
-            throw hresult_illegal_method_call();
-        }
-
-        auto appId = ComputeAppId();
-        auto type = AssociationType::Protocol;
-        auto progId = ComputeProgId(appId, type);
-        UnregisterAssociationHandler(appId, scheme.c_str(), type);
-        UnregisterProgId(progId);
     }
 
     void ActivationRegistrationManager::UnregisterForStartupActivation(hstring const& taskId)
@@ -176,10 +164,11 @@ namespace winrt::Microsoft::ProjectReunion::implementation
         }
     }
 
-    void ActivationRegistrationManager::RegisterForProtocolActivationInternal(hstring const& scheme,
-        hstring const& appUserModelId, hstring const& applicationDisplayName, hstring const& logo)
+    void ActivationRegistrationManager::RegisterForProtocolActivationInternal(std::wstring const& schemeName,
+        std::wstring const& appUserModelId, std::wstring const& logo, std::wstring const& displayName,
+        std::wstring const& exePath)
     {
-        if (scheme.empty())
+        if (schemeName.empty())
         {
             throw hresult_invalid_argument();
         }
@@ -189,20 +178,20 @@ namespace winrt::Microsoft::ProjectReunion::implementation
             throw hresult_illegal_method_call();
         }
 
-        RegisterProtocol(scheme.c_str());
+        RegisterProtocol(schemeName.c_str());
 
-        auto appId = ComputeAppId();
+        auto appId = ComputeAppId(exePath.c_str());
         auto type = AssociationType::Protocol;
         auto progId = ComputeProgId(appId, type);
 
-        RegisterProgId(progId.c_str(), L"", appUserModelId.c_str(), applicationDisplayName.c_str(),
+        RegisterProgId(progId.c_str(), L"", appUserModelId.c_str(), displayName.c_str(),
             logo.c_str());
 
-        auto command = GenerateCommandLine(L"") + L"%1";
+        auto command = GenerateCommandLine(exePath.c_str()) + L"%1";
         RegisterVerb(progId.c_str(), c_openVerbName, command);
 
         RegisterApplication(appId.c_str());
-        RegisterAssociationHandler(appId, scheme.c_str(), type);
+        RegisterAssociationHandler(appId, schemeName.c_str(), type);
     }
 
     void ActivationRegistrationManager::RegisterEncodedLaunchCommand()
@@ -216,13 +205,14 @@ namespace winrt::Microsoft::ProjectReunion::implementation
         RegisterVerb(scheme, c_openVerbName, L"", &delegateExecute);
     }
 
-    void ActivationRegistrationManager::RegisterEncodedLaunchSupport(hstring const& appUserModelId)
+    void ActivationRegistrationManager::RegisterEncodedLaunchSupport(std::wstring const& appUserModelId,
+        std::wstring const& exePath)
     {
         // Make sure the encoded launch delegate execute command is registered on the system.
         RegisterEncodedLaunchCommand();
 
         // Register the current app to receive launch requests.
-        RegisterForProtocolActivationInternal(c_encodedLaunchSchemeName.c_str(), appUserModelId,
-            L"Encoded Launch Target", L"");
+        RegisterForProtocolActivationInternal(c_encodedLaunchSchemeName, appUserModelId,
+            L"", L"Encoded Launch Target", exePath);
     }
 }
