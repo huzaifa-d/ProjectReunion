@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
+#include "ActivationRegistrationManager.h"
 #include "EncodedLaunchExecuteCommand.h"
 #include "Association.h"
 
@@ -42,7 +43,7 @@ CATCH_RETURN()
 
 extern "C" HRESULT __stdcall DllUnregisterServer() noexcept try
 {
-    std::wstring scheme = L"ms-launch";
+    std::wstring scheme = c_launchSchemeName;
     UnregisterProtocol(scheme);
     UnregisterCoClass(__uuidof(EncodedLaunchExecuteCommandFactory));
     return S_OK;

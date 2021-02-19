@@ -5,26 +5,26 @@
 namespace winrt::Microsoft::ProjectReunion::implementation
 {
     // Association registry key values.
-    static const std::wstring c_openWithProgIdsKeyName = L"OpenWithProgids";
-    static const std::wstring c_softwareClassesKeyPath = LR"(Software\Classes\)";
-    static const std::wstring c_applicationKeyName = L"Application";
-    static const std::wstring c_applicationNameValueName = L"ApplicationName";
-    static const std::wstring c_defaultIconKeyName = L"DefaultIcon";
-    static const std::wstring c_appUserModelIdValueName = L"AppUserModelId";
-    static const std::wstring c_applicationsKeyPath = LR"(Software\Microsoft\ReunionApplications\)";
-    static const std::wstring c_capabilitiesKeyPath = LR"(\Capabilties)";
-    static const std::wstring c_registeredApplicationsKeyPath = LR"(Software\RegisteredApplications\)";
-    static const std::wstring c_shellKeyName = L"shell";
-    static const std::wstring c_commandKeyName = L"command";
-    static const std::wstring c_delegateExecuteValueName = L"DelegateExecute";
-    static const std::wstring c_urlProtocolValueName = L"URL Protocol";
-    static const std::wstring c_urlDefaultValuePrefix = L"URL:";
-    static const std::wstring c_openVerbName = L"open";
+    static LPCWSTR c_openWithProgIdsKeyName{ L"OpenWithProgids" };
+    static LPCWSTR c_softwareClassesKeyPath{ LR"(Software\Classes\)" };
+    static LPCWSTR c_applicationKeyName{ L"Application" };
+    static LPCWSTR c_applicationNameValueName{ L"ApplicationName" };
+    static LPCWSTR c_defaultIconKeyName{ L"DefaultIcon" };
+    static LPCWSTR c_appUserModelIdValueName{ L"AppUserModelId" };
+    static LPCWSTR c_applicationsKeyPath{ LR"(Software\Microsoft\ReunionApplications\)" };
+    static LPCWSTR c_capabilitiesKeyPath{ LR"(\Capabilties)" };
+    static LPCWSTR c_registeredApplicationsKeyPath{ LR"(Software\RegisteredApplications\)" };
+    static LPCWSTR c_shellKeyName{ L"shell" };
+    static LPCWSTR c_commandKeyName{ L"command" };
+    static LPCWSTR c_delegateExecuteValueName{ L"DelegateExecute" };
+    static LPCWSTR c_urlProtocolValueName{ L"URL Protocol" };
+    static LPCWSTR c_urlDefaultValuePrefix{ L"URL:" };
+    static LPCWSTR c_openVerbName{ L"open" };
 
     // ProgId generation values.
-    static const std::wstring c_progIdPrefix = L"PRF";
-    static const std::wstring c_fileTypeProgIdSuffix = L".File";
-    static const std::wstring c_protocolProgIdSuffix = L".Protocol";
+    static LPCWSTR c_progIdPrefix{ L"PRF" };
+    static LPCWSTR c_fileTypeProgIdSuffix{ L".File" };
+    static LPCWSTR c_protocolProgIdSuffix{ L".Protocol" };
 
     enum AssociationType
     {

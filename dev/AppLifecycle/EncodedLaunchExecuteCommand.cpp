@@ -24,11 +24,8 @@ namespace winrt::Microsoft::ProjectReunion::implementation
         Uri uri{ rawUri };
         auto host = uri.Host();
 
-        auto separator = rawUri.find(L":");
-        if (separator == std::wstring::npos)
-        {
-            return E_INVALIDARG;
-        }
+        auto separator = rawUri.find(L':');
+        THROW_HR_IF(E_INVALIDARG, separator == std::wstring::npos);
 
         std::wstring encodedLaunchUri{ c_encodedLaunchSchemeName };
         encodedLaunchUri += rawUri.substr(separator);
@@ -48,8 +45,53 @@ namespace winrt::Microsoft::ProjectReunion::implementation
         auto succeeded = ShellExecuteEx(&executionInfo);
         if (!succeeded)
         {
-            auto resultCode = reinterpret_cast<int64_t>(executionInfo.hInstApp);
-            return static_cast<int32_t>(resultCode);
+            // hInstApp is really a HINSTANCE which is a handle.  This is for legacy ShellExecute
+            // reasons, but is repurposed to hold non-pointer type data sometimes.  This is one of
+            // those times.
+            auto resultCode = reinterpret_cast<size_t>(executionInfo.hInstApp);
+            DWORD error = static_cast<int32_t>(resultCode);
+
+            switch (error)
+            {
+            case SE_ERR_FNF:
+                THROW_WIN32(ERROR_FILE_NOT_FOUND);
+                break;
+            case SE_ERR_PNF:
+                THROW_WIN32(ERROR_PATH_NOT_FOUND);
+                break;
+            case SE_ERR_ACCESSDENIED:
+                THROW_WIN32(ERROR_ACCESS_DENIED);
+                break;
+            case SE_ERR_OOM:
+                THROW_WIN32(ERROR_NOT_ENOUGH_MEMORY);
+                break;
+            case SE_ERR_DLLNOTFOUND:
+                THROW_WIN32(ERROR_MOD_NOT_FOUND);
+                break;
+            case SE_ERR_SHARE:
+                THROW_WIN32(ERROR_SHARING_VIOLATION);
+                break;
+            case SE_ERR_DDETIMEOUT:
+                THROW_WIN32(ERROR_TIMEOUT);
+                break;
+            case SE_ERR_DDEFAIL:
+                THROW_WIN32(ERROR_DDE_FAIL);
+                break;
+            case SE_ERR_DDEBUSY:
+                THROW_WIN32(ERROR_BUSY);
+                break;
+            case SE_ERR_ASSOCINCOMPLETE:
+                // No great error for an incomplete association, so treat it as it doesn't exist.
+                __fallthrough;
+                break;
+            case SE_ERR_NOASSOC:
+                THROW_WIN32(ERROR_NO_ASSOCIATION);
+                break;
+
+            default:
+                THROW_HR(E_UNEXPECTED);
+                break;
+            }
         }
 
         return S_OK;
@@ -74,14 +116,17 @@ namespace winrt::Microsoft::ProjectReunion::implementation
                 // Check if the assocHandler has an AppUserModelId that matches our target.
                 auto objWithAppId = assocHandler.try_as<::IObjectWithAppUserModelID>();
                 wil::unique_cotaskmem_string appUserModelId;
-                if (objWithAppId && SUCCEEDED(objWithAppId->GetAppID(&appUserModelId)) &&
-                    appUserModelId.get() == targetAppUserModelId)
+                if (objWithAppId && SUCCEEDED(objWithAppId->GetAppID(&appUserModelId)))
                 {
-                    // Some handlers are not progId based, but we're trying to resolve to a progId.
-                    auto objWithProgId = assocHandler.try_as<::IObjectWithProgID>();
-                    if (objWithProgId && SUCCEEDED(objWithProgId->GetProgID(&progId)))
+                    if (CompareStringOrdinal(appUserModelId.get(), -1, targetAppUserModelId.c_str(),
+                        -1, TRUE) == CSTR_EQUAL)
                     {
-                        break;
+                        // Some handlers are not progId based, but we're trying to resolve to a progId.
+                        auto objWithProgId = assocHandler.try_as<::IObjectWithProgID>();
+                        if (objWithProgId && SUCCEEDED(objWithProgId->GetProgID(&progId)))
+                        {
+                            break;
+                        }
                     }
                 }
 

@@ -7,12 +7,13 @@
 namespace winrt::Microsoft::ProjectReunion::implementation
 {
     // Registration constant values.
-    static const std::wstring c_argumentPrefix = L"----";
-    static const std::wstring c_argumentSuffix = L":";
-    static const std::wstring c_protocolArgumentString = L"ms-protocol";
-    static const std::wstring c_launchSchemeName = L"ms-launch";
-    static const std::wstring c_encodedLaunchSchemeName = L"ms-encodedlaunch";
-    static const std::wstring c_runKeyPath = LR"(Software\Microsoft\Windows\CurrentVersion\Run\)";
+    static LPCWSTR c_argumentPrefix{ L"----" };
+    static LPCWSTR c_argumentSuffix{ L":" };
+    static LPCWSTR c_protocolArgumentString{ L"ms-protocol" };
+    static LPCWSTR c_launchSchemeName{ L"ms-launch" };
+    static LPCWSTR c_encodedLaunchSchemeName{ L"ms-encodedlaunch" };
+    static LPCWSTR c_runKeyPath{ LR"(Software\Microsoft\Windows\CurrentVersion\Run\)" };
+    static LPCWSTR c_contractIdKeyName{ L"ContractId" };
 
     struct ActivationRegistrationManager
     {

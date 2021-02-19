@@ -173,10 +173,10 @@ namespace winrt::Microsoft::ProjectReunion::implementation
         {
             // Example: HKEY_CURRENT_USER\Software\Classes\<progId>\Application\ApplicationName
             wil::unique_hkey applicationKey;
-            THROW_IF_WIN32_ERROR(::RegCreateKeyEx(key.get(), c_applicationKeyName.c_str(), 0,
+            THROW_IF_WIN32_ERROR(::RegCreateKeyEx(key.get(), c_applicationKeyName, 0,
                 nullptr, 0, KEY_WRITE, nullptr, applicationKey.put(), nullptr));
             THROW_IF_WIN32_ERROR(::RegSetValueEx(applicationKey.get(),
-                c_applicationNameValueName.c_str(), 0, REG_SZ,
+                c_applicationNameValueName, 0, REG_SZ,
                 reinterpret_cast<BYTE const*>(applicationDisplayName.c_str()),
                 static_cast<uint32_t>((applicationDisplayName.size() + 1) * sizeof(wchar_t))));
         }
@@ -185,7 +185,7 @@ namespace winrt::Microsoft::ProjectReunion::implementation
         {
             // Example: HKEY_CURRENT_USER\Software\Classes\<progId>\DefaultIcon\(Default)
             wil::unique_hkey defaultIconKey;
-            THROW_IF_WIN32_ERROR(::RegCreateKeyEx(key.get(), c_defaultIconKeyName.c_str(), 0,
+            THROW_IF_WIN32_ERROR(::RegCreateKeyEx(key.get(), c_defaultIconKeyName, 0,
                 nullptr, 0, KEY_WRITE, nullptr, defaultIconKey.put(), nullptr));
             THROW_IF_WIN32_ERROR(::RegSetValueEx(defaultIconKey.get(), nullptr, 0, REG_SZ,
                 reinterpret_cast<BYTE const*>(logo.c_str()),
@@ -195,7 +195,7 @@ namespace winrt::Microsoft::ProjectReunion::implementation
         if (!appUserModelId.empty())
         {
             // Example: HKEY_CURRENT_USER\Software\Classes\<progId>\AppUserModelId
-            THROW_IF_WIN32_ERROR(::RegSetValueEx(key.get(), c_appUserModelIdValueName.c_str(), 0,
+            THROW_IF_WIN32_ERROR(::RegSetValueEx(key.get(), c_appUserModelIdValueName, 0,
                 REG_SZ, reinterpret_cast<BYTE const*>(appUserModelId.c_str()),
                 static_cast<uint32_t>((appUserModelId.size() + 1) * sizeof(wchar_t))));
         }
@@ -218,7 +218,7 @@ namespace winrt::Microsoft::ProjectReunion::implementation
     {
         // Example: HKEY_CURRENT_USER\Software\RegisterApplications\<appId>
         wil::unique_hkey registeredAppsKey;
-        THROW_IF_WIN32_ERROR(::RegCreateKeyEx(GetRegistrationRoot(), c_registeredApplicationsKeyPath.c_str(),
+        THROW_IF_WIN32_ERROR(::RegCreateKeyEx(GetRegistrationRoot(), c_registeredApplicationsKeyPath,
             0, nullptr, 0, samDesired, nullptr, registeredAppsKey.put(), nullptr));
 
         std::wstring applicationKeyPath = CreateApplicationKeyPath(appId);
@@ -237,7 +237,7 @@ namespace winrt::Microsoft::ProjectReunion::implementation
     wil::unique_hkey OpenApplicationKey(const std::wstring& appId, REGSAM samDesired)
     {
         wil::unique_hkey registeredAppsKey;
-        THROW_IF_WIN32_ERROR(::RegOpenKeyEx(GetRegistrationRoot(), c_registeredApplicationsKeyPath.c_str(),
+        THROW_IF_WIN32_ERROR(::RegOpenKeyEx(GetRegistrationRoot(), c_registeredApplicationsKeyPath,
             0, samDesired, registeredAppsKey.put()));
 
         DWORD pathSize{ 0 };
@@ -268,7 +268,7 @@ namespace winrt::Microsoft::ProjectReunion::implementation
         ::RegDeleteTree(GetRegistrationRoot(), capabilitiesKeyPath.c_str());
 
         wil::unique_hkey registeredAppsKey;
-        if (::RegOpenKeyEx(GetRegistrationRoot(), c_registeredApplicationsKeyPath.c_str(), 0,
+        if (::RegOpenKeyEx(GetRegistrationRoot(), c_registeredApplicationsKeyPath, 0,
             KEY_WRITE, registeredAppsKey.put()) == ERROR_SUCCESS)
         {
             ::RegDeleteValue(registeredAppsKey.get(), appId.c_str());
@@ -280,7 +280,7 @@ namespace winrt::Microsoft::ProjectReunion::implementation
     {
         // Example: HKEY_CURRENT_USER\Software\Classes\<progId>\shell\<verb>\command
         auto assocKey = OpenAssocKey(progId, KEY_WRITE);
-        auto key_path = c_shellKeyName + L"\\" + verb + L"\\" + c_commandKeyName;
+        auto key_path = wil::str_printf<std::wstring>(L"%s\\%s\\%s", c_shellKeyName, verb.c_str(), c_commandKeyName);
         wil::unique_hkey key;
 
         THROW_IF_WIN32_ERROR(::RegCreateKeyEx(assocKey.get(), key_path.c_str(), 0, nullptr, 0,
@@ -295,7 +295,7 @@ namespace winrt::Microsoft::ProjectReunion::implementation
             std::wstring delegateClsid{ LR"({????????-????-????-????-????????????})" };
             ::StringFromGUID2(*delegateExecute, delegateClsid.data(), 39);
 
-            THROW_IF_WIN32_ERROR(::RegSetValueEx(key.get(), c_delegateExecuteValueName.c_str(), 0, REG_SZ,
+            THROW_IF_WIN32_ERROR(::RegSetValueEx(key.get(), c_delegateExecuteValueName, 0, REG_SZ,
                 reinterpret_cast<BYTE const*>(delegateClsid.c_str()),
                 static_cast<uint32_t>((delegateClsid.size() + 1) * sizeof(wchar_t))));
         }
@@ -333,7 +333,7 @@ namespace winrt::Microsoft::ProjectReunion::implementation
 
         // Example: HKEY_CURRENT_USER\Software\Classes\<scheme>\URL Protocol
         std::wstring emptyValue{ L"" };
-        THROW_IF_WIN32_ERROR(::RegSetValueEx(key.get(), c_urlProtocolValueName.c_str(), 0,
+        THROW_IF_WIN32_ERROR(::RegSetValueEx(key.get(), c_urlProtocolValueName, 0,
             REG_SZ, reinterpret_cast<BYTE const*>(emptyValue.c_str()),
             static_cast<uint32_t>((emptyValue.size() + 1) * sizeof(wchar_t))));
     }
@@ -419,7 +419,7 @@ namespace winrt::Microsoft::ProjectReunion::implementation
             auto assocKey = OpenAssocKey(association, KEY_WRITE);
 
             // Example: HKEY_CURRENT_USER\Software\Classes\<association>\OpenWithProgids
-            THROW_IF_WIN32_ERROR(::RegCreateKeyEx(assocKey.get(), c_openWithProgIdsKeyName.c_str(),
+            THROW_IF_WIN32_ERROR(::RegCreateKeyEx(assocKey.get(), c_openWithProgIdsKeyName,
                 0, nullptr, 0, KEY_WRITE, nullptr, openWithKey.put(), nullptr));
 
             // Example: Name: <progId>
@@ -453,7 +453,7 @@ namespace winrt::Microsoft::ProjectReunion::implementation
             // Example: HKEY_CURRENT_USER\Software\Classes\<association>\OpenWithProgids
             wil::unique_hkey openWithKey;
             auto assocKey = OpenAssocKey(association, KEY_WRITE);
-            if (::RegOpenKeyEx(assocKey.get(), c_openWithProgIdsKeyName.c_str(), 0, KEY_WRITE,
+            if (::RegOpenKeyEx(assocKey.get(), c_openWithProgIdsKeyName, 0, KEY_WRITE,
                 openWithKey.put()) == ERROR_SUCCESS)
             {
                 auto progId = ComputeProgId(handlerAppId, type);
