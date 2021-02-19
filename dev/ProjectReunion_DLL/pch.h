@@ -1,4 +1,6 @@
 ﻿#pragma once
+#include <Windows.h>
+#include <assert.h>
 #include <unknwn.h>
 #include <ShObjIdl_core.h>
 #include <thread>
@@ -6,9 +8,11 @@
 #include <list>
 #include <stdexcept>
 #include <wil/cppwinrt.h>
+#include <wil/stl.h>
 #include <wil/token_helpers.h>
 #include <wil/resource.h>
 #include <wil/result_macros.h>
+#include <wil/win32_helpers.h>
 #include <appmodel.h>
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.Foundation.Collections.h>
