@@ -22,7 +22,7 @@ namespace winrt::Microsoft::ProjectReunion::implementation
     static LPCWSTR c_openVerbName{ L"open" };
 
     // ProgId generation values.
-    static LPCWSTR c_progIdPrefix{ L"PRF" };
+    static LPCWSTR c_progIdPrefix{ L"App." };
     static LPCWSTR c_fileTypeProgIdSuffix{ L".File" };
     static LPCWSTR c_protocolProgIdSuffix{ L".Protocol" };
 

@@ -56,7 +56,7 @@ namespace winrt::Microsoft::ProjectReunion::implementation
 
     std::wstring ComputeAppId(const std::wstring& customSeed)
     {
-        // PRF = Project Reunion Framework.  A simple prefix to help identify ProgIds we compute here.
+        // Prefix = App -- Simple human readable piece to help organize these together.
         // AppId = Prefix + Hash(seed)
         std::wstring seed = customSeed;
 
