@@ -101,7 +101,7 @@ int main()
 
         // Do stuff to process the raw payload
 
-        // Call CompleteDeferral as good practise: Needed mainly for low power usage
+        // Call CompleteDeferral as good practice: Needed mainly for low power usage
         pushArgs.CompleteDeferral();
     }
     else if (kind == ReunionActivationKind::Launch) // This indicates that the app is launching in the foreground
@@ -109,14 +109,14 @@ int main()
         // Register an event to Intercept Push payloads
         auto eventToken = details.PushReceived([](const auto&, PushReceivedEventArgs args)
         {
-                // Call TakeDeferral to ensure that code runs in low power
+                // Call GetDeferral to ensure that code runs in low power
                 args.GetDeferral();
 
                 auto payload = args.Payload();
 
                 // Do stuff to process the raw payload
 
-                // Call CompleteDeferral as good practise: Needed mainly for low power usage
+                // Call CompleteDeferral as good practice: Needed mainly for low power usage
                 args.CompleteDeferral();
         });
 
