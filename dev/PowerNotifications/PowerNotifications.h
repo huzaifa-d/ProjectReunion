@@ -27,6 +27,12 @@ namespace winrt::Microsoft::ProjectReunion::implementation
 
 namespace winrt::Microsoft::ProjectReunion::factory_implementation
 {
+
+    eventType EnergySaverEvent();
+    void EnergySaver_Register();
+    void EnergySaver_Unregister();
+    void EnergySaver_Update();
+
     using PowerFunctionDetails = winrt::Microsoft::ProjectReunion::implementation::PowerFunctionDetails;
 
     struct PowerManager : PowerManagerT<PowerManager, implementation::PowerManager, static_lifetime>
@@ -107,6 +113,9 @@ namespace winrt::Microsoft::ProjectReunion::factory_implementation
             //fn.event()(nullptr, nullptr);
         }
 
+
+        PowerFunctionDetails EnergySaverStatusFunc{ &EnergySaverEvent, &EnergySaver_Register, &EnergySaver_Unregister, &EnergySaver_Update };
+
         winrt::Microsoft::ProjectReunion::EnergySaverStatus EnergySaverStatus()
         {
             //CheckRegistrationAndOrUpdateValue(EnergySaverStatusFn);
@@ -115,19 +124,20 @@ namespace winrt::Microsoft::ProjectReunion::factory_implementation
 
         event_token EnergySaverStatusChanged(PowerEventHandle const& handler)
         {
-            //return AddCallback(EnergySaverStatusFn, handler);
+            return AddCallback(EnergySaverStatusFunc, handler);
         }
 
         void EnergySaverStatusChanged(event_token const& token)
         {
-            //RemoveCallback(EnergySaverStatusFn, token);
+            RemoveCallback(EnergySaverStatusFunc, token);
         }
 
         void EnergySaverStatusChanged_Callback(::EnergySaverStatus energySaverStatus)
         {
             //stats->m_cachedEnergySaverStatus = energySaverStatus;
-            //FireEvent(EnergySaverStatusFn);
+            //FireEvent(EnergySaverStatusFunc);
         }
+       
 
     };
 }
@@ -136,22 +146,15 @@ namespace winrt::Microsoft::ProjectReunion::implementation
 {
     auto stats = make_self<factory_implementation::PowerManager>();    
 
-    eventType EnergySaverEvent();
-    void EnergySaver_Register();
-    void EnergySaver_Unregister();
-    void EnergySaver_Update();
-    
+
      struct PowerManager
-    {
+     {
         PowerManager() = default;        
-
-
-
 
         static winrt::Microsoft::ProjectReunion::EnergySaverStatus EnergySaverStatus()
         {
             return stats->EnergySaverStatus();
-        }
+        }        
 
         static winrt::Microsoft::ProjectReunion::BatteryStatus BatteryStatus();
         static event_token BatteryStatusChanged(PowerEventHandle const&);
@@ -222,18 +225,15 @@ namespace winrt::Microsoft::ProjectReunion::implementation
 
         static bool       NotAlreadyRegisteredForEvents(eventType);
         static eventType  GetEventObj(PowerFunction const&);        
-        static event_token AddCallback(PowerFunction const&, PowerEventHandle const&);
         static void RegisterListener (PowerFunction const&);
-        static void RemoveCallback   (PowerFunction const&, event_token const&);
         static void UnregisterListener(PowerFunction const&);
         static void CheckRegistrationAndOrUpdateValue(PowerFunction const&);
-        static void FireEvent(PowerFunction const&);
         static void FireCorrespondingBatteryEvent();
         static void ProcessCompositeBatteryStatus(CompositeBatteryStatus const&);
 
         static event_token AddCallback(PowerFunctionDetails fn, PowerEventHandle const&);
 
-        PowerFunctionDetails EnergySaverStatusFunc{ &EnergySaverEvent, &EnergySaver_Register, &EnergySaver_Unregister, &EnergySaver_Update };
+        
 
     };
 }
