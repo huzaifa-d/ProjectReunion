@@ -9,15 +9,12 @@
 namespace winrt::Microsoft::ProjectReunion::implementation
 {
 
-    auto stats = make_self<factory_implementation::PowerManager>();
+    
 
     //stats->m_oldBatteryStatus = winrt::Microsoft::ProjectReunion::BatteryStatus::NotPresent;
     //stats->m_oldPowerSupplyStatus = winrt::Microsoft::ProjectReunion::PowerSupplyStatus::NotPresent;
 
-    bool PowerManager::NotAlreadyRegisteredForEvents(eventType eventObj)
-    {
-        return !eventObj.get();
-    }
+
 
     eventType PowerManager::GetEventObj(PowerFunction const& fn)
     {
@@ -35,33 +32,6 @@ namespace winrt::Microsoft::ProjectReunion::implementation
             case SystemAwayModeStatusFn:   return stats->m_systemAwayModeStatusChangedEvent;
             default: throw E_NOTIMPL;
         }
-    }
-
-    EventToken PowerManager::AddCallback(PowerFunctionDetails fn, PowerEventHandle const& handler)
-    {
-        auto eventObj = fn.event();
-        std::scoped_lock<std::mutex> lock(stats->m_mutex);
-
-        //Check prior registrations
-        if (NotAlreadyRegisteredForEvents(eventObj))
-        {
-            fn.registerListener();
-        }
-        eventObj.get().add(handler);
-    }
-
-    EventToken PowerManager::AddCallback(PowerFunction const& fn, PowerEventHandle const& handler)
-    {
-        auto eventObj = GetEventObj(fn);
-        std::scoped_lock<std::mutex> lock(stats->m_mutex);
-
-        //Check prior registrations
-        if (NotAlreadyRegisteredForEvents(eventObj))
-        {
-            //*this->ResisterListener();
-            RegisterListener(fn);
-        }
-        eventObj.get().add(handler);
     }
 
     void PowerManager::RegisterListener(PowerFunction const& fn)
@@ -100,22 +70,6 @@ namespace winrt::Microsoft::ProjectReunion::implementation
         }
     }
 
-    void PowerManager::RemoveCallback(PowerFunction const& fn, EventToken const& token)
-    {
-        auto eventObj = GetEventObj(fn);
-        eventObj.get().remove(token);
-        std::scoped_lock<std::mutex> lock(stats->m_mutex);
-        //Check prior registrations
-        if (NotAlreadyRegisteredForEvents(eventObj))
-        {
-            UnregisterListener(fn);
-        }
-    }
-
-    void PowerManager::FireEvent(PowerFunction const& fn)
-    {
-        GetEventObj(fn).get()(nullptr, nullptr);
-    }
 
     //Checks if an event is already registered. If none are, then gets the status and caches it
     void PowerManager::CheckRegistrationAndOrUpdateValue(PowerFunction const& fn)
@@ -171,49 +125,6 @@ namespace winrt::Microsoft::ProjectReunion::implementation
         }
 
     }
-
-    EnergySaverStatus PowerManager::EnergySaverStatus()
-    {
-        CheckRegistrationAndOrUpdateValue(EnergySaverStatusFn);
-        return static_cast<winrt::Microsoft::ProjectReunion::EnergySaverStatus>(stats->m_cachedEnergySaverStatus);
-    }
-
-    EventToken PowerManager::EnergySaverStatusChanged(PowerEventHandle const& handler)
-    {
-        return AddCallback(EnergySaverStatusFn, handler);
-    }
-
-    void PowerManager::EnergySaverStatusChanged(EventToken const& token)
-    {
-        RemoveCallback(EnergySaverStatusFn, token);
-    }
-
-    void PowerManager::EnergySaverStatusChanged_Callback(::EnergySaverStatus energySaverStatus)
-    {
-        stats->m_cachedEnergySaverStatus = energySaverStatus;
-        FireEvent(EnergySaverStatusFn);
-    }
-
-    eventType EnergySaverEvent()
-    {
-        return stats->m_energySaverStatusChangedEvent;
-    }
-
-    void EnergySaver_Register()
-    {
-        check_hresult(RegisterEnergySaverStatusChangedListener(PowerManager::EnergySaverStatusChanged_Callback, &stats->m_energySaverStatusHandle));
-    }
-
-    void EnergySaver_Unregister()
-    {
-        check_hresult(UnregisterEnergySaverStatusChangedListener(stats->m_energySaverStatusHandle));
-    }
-
-    void EnergySaver_Update()
-    {
-        check_hresult(GetEnergySaverStatus(&stats->m_cachedEnergySaverStatus));
-    }
-
 
 
     void PowerManager::ProcessCompositeBatteryStatus(CompositeBatteryStatus const& compositeBatteryStatus)
@@ -288,12 +199,12 @@ namespace winrt::Microsoft::ProjectReunion::implementation
         return stats->m_batteryStatus;        
     }
 
-    EventToken PowerManager::BatteryStatusChanged(PowerEventHandle const& handler)
+    event_token PowerManager::BatteryStatusChanged(PowerEventHandle const& handler)
     {
         return AddCallback(BatteryStatusFn, handler);
     }
 
-    void PowerManager::BatteryStatusChanged(EventToken const& token)
+    void PowerManager::BatteryStatusChanged(event_token const& token)
     {
         RemoveCallback(BatteryStatusFn, token);
     }
@@ -310,12 +221,12 @@ namespace winrt::Microsoft::ProjectReunion::implementation
         return stats->m_powerSupplyStatus;
     }
 
-    EventToken PowerManager::PowerSupplyStatusChanged(PowerEventHandle const& handler)
+    event_token PowerManager::PowerSupplyStatusChanged(PowerEventHandle const& handler)
     {
         return AddCallback(PowerSupplyStatusFn, handler);
     }
 
-    void PowerManager::PowerSupplyStatusChanged(EventToken const& token)
+    void PowerManager::PowerSupplyStatusChanged(event_token const& token)
     {
         RemoveCallback(PowerSupplyStatusFn, token);
     }
@@ -326,12 +237,12 @@ namespace winrt::Microsoft::ProjectReunion::implementation
         return stats->m_batteryChargePercent;
     }
 
-    EventToken PowerManager::RemainingChargePercentChanged(PowerEventHandle const& handler)
+    event_token PowerManager::RemainingChargePercentChanged(PowerEventHandle const& handler)
     {
         return AddCallback(RemainingChargePercentFn, handler);
     }
 
-    void PowerManager::RemainingChargePercentChanged(EventToken const& token)
+    void PowerManager::RemainingChargePercentChanged(event_token const& token)
     {
         RemoveCallback(RemainingChargePercentFn, token);
     }
@@ -342,12 +253,12 @@ namespace winrt::Microsoft::ProjectReunion::implementation
         return Windows::Foundation::TimeSpan(std::chrono::seconds(stats->m_cachedDischargeTime));
     }
 
-    EventToken PowerManager::RemainingDischargeTimeChanged(PowerEventHandle const& handler)
+    event_token PowerManager::RemainingDischargeTimeChanged(PowerEventHandle const& handler)
     {
         return AddCallback(RemainingDischargeTimeFn, handler);
     }
 
-    void PowerManager::RemainingDischargeTimeChanged(EventToken const& token)
+    void PowerManager::RemainingDischargeTimeChanged(event_token const& token)
     {
         RemoveCallback(RemainingDischargeTimeFn, token);
     }
@@ -364,12 +275,12 @@ namespace winrt::Microsoft::ProjectReunion::implementation
         return  static_cast<winrt::Microsoft::ProjectReunion::PowerSourceStatus>(stats->m_cachedPowerCondition);
     }
 
-    EventToken PowerManager::PowerSourceStatusChanged(PowerEventHandle const& handler)
+    event_token PowerManager::PowerSourceStatusChanged(PowerEventHandle const& handler)
     {
         return AddCallback(PowerSourceStatusFn, handler);
     }
 
-    void PowerManager::PowerSourceStatusChanged(EventToken const& token)
+    void PowerManager::PowerSourceStatusChanged(event_token const& token)
     {
         RemoveCallback(PowerSourceStatusFn, token);
     }
@@ -386,12 +297,12 @@ namespace winrt::Microsoft::ProjectReunion::implementation
         return static_cast<winrt::Microsoft::ProjectReunion::DisplayStatus>(stats->m_cachedDisplayStatus);
     }
 
-    EventToken PowerManager::DisplayStatusChanged(PowerEventHandle const& handler)
+    event_token PowerManager::DisplayStatusChanged(PowerEventHandle const& handler)
     {
         return AddCallback(DisplayStatusFn, handler);
     }
 
-    void PowerManager::DisplayStatusChanged(EventToken const& token)
+    void PowerManager::DisplayStatusChanged(event_token const& token)
     {
         RemoveCallback(DisplayStatusFn, token);
     }
@@ -408,12 +319,12 @@ namespace winrt::Microsoft::ProjectReunion::implementation
         return SystemIdleStatus::Busy;
     }
 
-    EventToken PowerManager::SystemIdleStatusChanged(PowerEventHandle const& handler)
+    event_token PowerManager::SystemIdleStatusChanged(PowerEventHandle const& handler)
     {
         return AddCallback(SystemIdleStatusFn, handler);
     }
 
-    void PowerManager::SystemIdleStatusChanged(EventToken const& token)
+    void PowerManager::SystemIdleStatusChanged(event_token const& token)
     {
         RemoveCallback(SystemIdleStatusFn, token);
     }
@@ -440,12 +351,12 @@ namespace winrt::Microsoft::ProjectReunion::implementation
         }        
     }
 
-    EventToken PowerManager::PowerSchemePersonalityChanged(PowerEventHandle const& handler)
+    event_token PowerManager::PowerSchemePersonalityChanged(PowerEventHandle const& handler)
     {
         return AddCallback(PowerSchemePersonalityFn, handler);
     }
 
-    void PowerManager::PowerSchemePersonalityChanged(EventToken const& token)
+    void PowerManager::PowerSchemePersonalityChanged(event_token const& token)
     {
         RemoveCallback(PowerSchemePersonalityFn, token);
     }
@@ -462,12 +373,12 @@ namespace winrt::Microsoft::ProjectReunion::implementation
         return static_cast<winrt::Microsoft::ProjectReunion::UserPresenceStatus>(stats->m_cachedUserPresenceStatus);
     }
 
-    EventToken PowerManager::UserPresenceStatusChanged(PowerEventHandle const& handler)
+    event_token PowerManager::UserPresenceStatusChanged(PowerEventHandle const& handler)
     {
         return AddCallback(UserPresenceStatusFn, handler);
     }
 
-    void PowerManager::UserPresenceStatusChanged(EventToken const& token)
+    void PowerManager::UserPresenceStatusChanged(event_token const& token)
     {
         RemoveCallback(UserPresenceStatusFn, token);
     }
@@ -484,12 +395,12 @@ namespace winrt::Microsoft::ProjectReunion::implementation
         return static_cast<winrt::Microsoft::ProjectReunion::SystemAwayModeStatus>(stats->m_cachedSystemAwayModeStatus);
     }
 
-    EventToken PowerManager::SystemAwayModeStatusChanged(PowerEventHandle const& handler)
+    event_token PowerManager::SystemAwayModeStatusChanged(PowerEventHandle const& handler)
     {
         return AddCallback(SystemAwayModeStatusFn, handler); 
     }
 
-    void PowerManager::SystemAwayModeStatusChanged(EventToken const& token)
+    void PowerManager::SystemAwayModeStatusChanged(event_token const& token)
     {
         RemoveCallback(SystemAwayModeStatusFn, token);
     }
