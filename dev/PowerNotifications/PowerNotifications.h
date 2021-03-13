@@ -9,23 +9,36 @@
 #include <wil/resource.h>
 #include <wil/result_macros.h>
 
+using PowerEventHandle = winrt::Windows::Foundation::EventHandler<winrt::Windows::Foundation::IInspectable>;
+using eventType = wil::object_without_destructor_on_shutdown<winrt::event<PowerEventHandle>>;
+
 namespace winrt::Microsoft::ProjectReunion::implementation
 {
-    using PowerEventHandle = Windows::Foundation::EventHandler<Windows::Foundation::IInspectable>;
-    using EventToken = winrt::event_token ;
+    using EventToken = event_token ;
 
-    struct CompositeBatteryStats
-    {
-        int   oldBatteryChargePercent, batteryChargePercent;
-        winrt::Microsoft::ProjectReunion::BatteryStatus     oldBatteryStatus, batteryStatus;
-        winrt::Microsoft::ProjectReunion::PowerSupplyStatus oldPowerSupplyStatus, powerSupplyStatus;
-    };
+    
+
+    eventType EnergySaverEvent();
+    void EnergySaver_Register();
+    void EnergySaver_Unregister();
+    void EnergySaver_Update();
+    
+
 
     struct PowerManager
     {
         PowerManager() = default;
 
-        using eventType = wil::object_without_destructor_on_shutdown<winrt::event<PowerEventHandle>>;
+        
+
+        struct PowerFunctionDetails
+        {
+            //eventType(*event)(Windows::Foundation::IInspectable const&, Windows::Foundation::IInspectable const&);
+            eventType(*event)();
+            void(*registerListener)();
+            void(*unregisterListener)();
+            void(*getStatus)();
+        };
 
         static winrt::Microsoft::ProjectReunion::EnergySaverStatus EnergySaverStatus();
         static EventToken EnergySaverStatusChanged(PowerEventHandle const&);
@@ -95,47 +108,9 @@ namespace winrt::Microsoft::ProjectReunion::implementation
             SystemAwayModeStatusFn
         };
 
-    private:
+        private:
         // REVIEW: leaks during ExitProcess, to avoid making cross-binary calls. Probably insufficient if we need to tolerate final CoUninitialize scenarios.
-        // Ultimately depends on whether Reunion binaries are persistently kept loaded by something other than COM.        
-
-        static eventType m_energySaverStatusChangedEvent;
-        static eventType m_batteryStatusChangedEvent;
-        static eventType m_powerSupplyStatusChangedEvent;
-        static eventType m_remainingChargePercentChangedEvent;
-        static eventType m_remainingDischargeTimeChangedEvent;
-
-        static eventType m_powerSourceStatusChangedEvent;
-        static eventType m_displayStatusChangedEvent;
-        static eventType m_systemIdleStatusChangedEvent;
-        static eventType m_powerSchemePersonalityChangedEvent;
-        static eventType m_userPresenceStatusChangedEvent;
-        static eventType m_systemAwayModeStatusChangedEvent;
-
-        static CompositeBatteryStatusRegistration m_batteryStatusHandle;
-        static EnergySaverStatusRegistration      m_energySaverStatusHandle;
-        static PowerConditionRegistration         m_powerConditionHandle;
-        static DischargeTimeRegistration          m_dischargeTimeHandle;
-        static DisplayStatusRegistration          m_displayStatusHandle;
-        static SystemIdleStatusRegistration       m_systemIdleStatusHandle;
-        static PowerSchemePersonalityRegistration m_powerSchemePersonalityHandle;
-        static UserPresenceStatusRegistration     m_userPresenceStatusHandle;
-        static SystemAwayModeStatusRegistration   m_systemAwayModeStatusHandle;
-
-        static std::mutex m_mutex;
-        static CompositeBatteryStats m_stats;
-
-        static int   m_batteryChargePercent, m_oldBatteryChargePercent;
-        static DWORD m_cachedDisplayStatus;
-        static DWORD m_cachedUserPresenceStatus;
-        static DWORD m_cachedSystemAwayModeStatus;
-        static DWORD m_cachedPowerCondition;
-        static GUID  m_cachedPowerSchemePersonality;
-        static ULONGLONG              m_cachedDischargeTime;
-        static ::EnergySaverStatus    m_cachedEnergySaverStatus;
-        static CompositeBatteryStatus *m_cachedCompositeBatteryStatus;
-        static winrt::Microsoft::ProjectReunion::BatteryStatus     m_batteryStatus, m_oldBatteryStatus;
-        static winrt::Microsoft::ProjectReunion::PowerSupplyStatus m_powerSupplyStatus, m_oldPowerSupplyStatus;
+        // Ultimately depends on whether Reunion binaries are persistently kept loaded by something other than COM.   
 
         static bool       NotAlreadyRegisteredForEvents(eventType);
         static eventType  GetEventObj(PowerFunction const&);        
@@ -147,12 +122,56 @@ namespace winrt::Microsoft::ProjectReunion::implementation
         static void FireEvent(PowerFunction const&);
         static void FireCorrespondingBatteryEvent();
         static void ProcessCompositeBatteryStatus(CompositeBatteryStatus const&);
+
+        static EventToken AddCallback(PowerFunctionDetails fn, PowerEventHandle const&);
+
+        PowerFunctionDetails EnergySaverStatusFunc{ &EnergySaverEvent, &EnergySaver_Register, &EnergySaver_Unregister, &EnergySaver_Update };
+
     };
 }
 
 namespace winrt::Microsoft::ProjectReunion::factory_implementation
 {
-    struct PowerManager : PowerManagerT<PowerManager, implementation::PowerManager>
+    struct PowerManager : PowerManagerT<PowerManager, implementation::PowerManager, static_lifetime>
     {
+        eventType m_energySaverStatusChangedEvent;
+        eventType m_batteryStatusChangedEvent;
+        eventType m_powerSupplyStatusChangedEvent;
+        eventType m_remainingChargePercentChangedEvent;
+        eventType m_remainingDischargeTimeChangedEvent;
+
+        eventType m_powerSourceStatusChangedEvent;
+        eventType m_displayStatusChangedEvent;
+        eventType m_systemIdleStatusChangedEvent;
+        eventType m_powerSchemePersonalityChangedEvent;
+        eventType m_userPresenceStatusChangedEvent;
+        eventType m_systemAwayModeStatusChangedEvent;
+
+        EnergySaverStatusRegistration      m_energySaverStatusHandle;
+        CompositeBatteryStatusRegistration m_batteryStatusHandle;
+        PowerConditionRegistration         m_powerConditionHandle;
+        DischargeTimeRegistration          m_dischargeTimeHandle;
+        DisplayStatusRegistration          m_displayStatusHandle;
+        SystemIdleStatusRegistration       m_systemIdleStatusHandle;
+        PowerSchemePersonalityRegistration m_powerSchemePersonalityHandle;
+        UserPresenceStatusRegistration     m_userPresenceStatusHandle;
+        SystemAwayModeStatusRegistration   m_systemAwayModeStatusHandle;
+
+        std::mutex m_mutex;
+
+        int   m_batteryChargePercent;
+        int   m_oldBatteryChargePercent;
+        DWORD m_cachedDisplayStatus;
+        DWORD m_cachedUserPresenceStatus;
+        DWORD m_cachedSystemAwayModeStatus;
+        DWORD m_cachedPowerCondition;
+        GUID  m_cachedPowerSchemePersonality;
+        ULONGLONG              m_cachedDischargeTime;
+        ::EnergySaverStatus    m_cachedEnergySaverStatus;
+        CompositeBatteryStatus* m_cachedCompositeBatteryStatus;
+        winrt::Microsoft::ProjectReunion::BatteryStatus m_batteryStatus;
+        winrt::Microsoft::ProjectReunion::BatteryStatus m_oldBatteryStatus;
+        winrt::Microsoft::ProjectReunion::PowerSupplyStatus m_powerSupplyStatus;
+        winrt::Microsoft::ProjectReunion::PowerSupplyStatus m_oldPowerSupplyStatus;
     };
 }
