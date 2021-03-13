@@ -128,26 +128,6 @@ namespace winrt::Microsoft::ProjectReunion::implementation
 
 
 
-    eventType EnergySaverEvent()
-    {
-        return stats->m_energySaverStatusChangedEvent;
-    }
-
-    void EnergySaver_Register()
-    {
-        //check_hresult(RegisterEnergySaverStatusChangedListener(PowerManager::EnergySaverStatusChanged_Callback, &stats->m_energySaverStatusHandle));
-    }
-
-    void EnergySaver_Unregister()
-    {
-        check_hresult(UnregisterEnergySaverStatusChangedListener(stats->m_energySaverStatusHandle));
-    }
-
-    void EnergySaver_Update()
-    {
-        check_hresult(GetEnergySaverStatus(&stats->m_cachedEnergySaverStatus));
-    }
-
 
 
     void PowerManager::ProcessCompositeBatteryStatus(CompositeBatteryStatus const& compositeBatteryStatus)
@@ -435,3 +415,5 @@ namespace winrt::Microsoft::ProjectReunion::implementation
     }
 
 }
+
+

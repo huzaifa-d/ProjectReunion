@@ -27,12 +27,6 @@ namespace winrt::Microsoft::ProjectReunion::implementation
 
 namespace winrt::Microsoft::ProjectReunion::factory_implementation
 {
-
-    eventType EnergySaverEvent();
-    void EnergySaver_Register();
-    void EnergySaver_Unregister();
-    void EnergySaver_Update();
-
     using PowerFunctionDetails = winrt::Microsoft::ProjectReunion::implementation::PowerFunctionDetails;
 
     struct PowerManager : PowerManagerT<PowerManager, implementation::PowerManager, static_lifetime>
@@ -113,8 +107,34 @@ namespace winrt::Microsoft::ProjectReunion::factory_implementation
             //fn.event()(nullptr, nullptr);
         }
 
+        eventType EnergySaverEvent()
+        {
+            return m_energySaverStatusChangedEvent;
+        }
 
-        PowerFunctionDetails EnergySaverStatusFunc{ &EnergySaverEvent, &EnergySaver_Register, &EnergySaver_Unregister, &EnergySaver_Update };
+        void EnergySaver_Register()
+        {
+            winrt::check_hresult(RegisterEnergySaverStatusChangedListener(&PowerManager::EnergySaverStatusChanged_Callback, m_energySaverStatusHandle));
+        }
+
+
+        void EnergySaver_Unregister()
+        {
+            winrt::check_hresult(UnregisterEnergySaverStatusChangedListener(m_energySaverStatusHandle));
+        }
+
+        void EnergySaver_Update()
+        {
+            //winrt::check_hresult(GetEnergySaverStatus(m_cachedEnergySaverStatus));
+        }
+
+        void EnergySaverStatusChanged_Callback(::EnergySaverStatus energySaverStatus)
+        {
+            m_cachedEnergySaverStatus = energySaverStatus;
+            //FireEvent(EnergySaverStatusFunc);
+        }
+
+        PowerFunctionDetails EnergySaverStatusFunc{ &PowerManager::EnergySaverEvent, &PowerManager::EnergySaver_Register, &PowerManager::EnergySaver_Unregister, &PowerManager::EnergySaver_Update };
 
         winrt::Microsoft::ProjectReunion::EnergySaverStatus EnergySaverStatus()
         {
@@ -131,14 +151,6 @@ namespace winrt::Microsoft::ProjectReunion::factory_implementation
         {
             RemoveCallback(EnergySaverStatusFunc, token);
         }
-
-        void EnergySaverStatusChanged_Callback(::EnergySaverStatus energySaverStatus)
-        {
-            //stats->m_cachedEnergySaverStatus = energySaverStatus;
-            //FireEvent(EnergySaverStatusFunc);
-        }
-       
-
     };
 }
 
@@ -218,6 +230,12 @@ namespace winrt::Microsoft::ProjectReunion::implementation
             UserPresenceStatusFn,
             SystemAwayModeStatusFn
         };
+
+        //void EnergySaverStatusChanged_Callback(::EnergySaverStatus energySaverStatus)
+        //{
+        //    m_cachedEnergySaverStatus = energySaverStatus;
+        //    //FireEvent(EnergySaverStatusFunc);
+        //}
 
         private:
         // REVIEW: leaks during ExitProcess, to avoid making cross-binary calls. Probably insufficient if we need to tolerate final CoUninitialize scenarios.
