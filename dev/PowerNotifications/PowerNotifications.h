@@ -4,7 +4,7 @@
 #pragma once
 
 #include <mutex>
-#include <PowerManager.g.h>
+#include <Microsoft.Windows.System.Power.PowerManager.g.h>
 #include <PowerNotificationsPal.h>
 #include <wil/resource.h>
 #include <wil/result_macros.h>
@@ -14,7 +14,7 @@ using PowerEventHandle =
 using EventType = winrt::event<PowerEventHandle>;
 
 // Forward-declarations
-namespace winrt::Microsoft::ProjectReunion::implementation
+namespace winrt::Microsoft::Windows::System::Power::implementation
 {
     struct PowerManager;
 
@@ -84,9 +84,9 @@ namespace winrt::Microsoft::ProjectReunion::implementation
     };
 }
 
-namespace winrt::Microsoft::ProjectReunion::factory_implementation
+namespace winrt::Microsoft::Windows::System::Power::factory_implementation
 {
-    using PowerFunctionDetails = winrt::Microsoft::ProjectReunion::implementation::PowerFunctionDetails;
+    using PowerFunctionDetails = winrt::Microsoft::Windows::System::Power::implementation::PowerFunctionDetails;
 
     struct PowerManager : PowerManagerT<PowerManager, implementation::PowerManager, static_lifetime>
     {
@@ -101,10 +101,10 @@ namespace winrt::Microsoft::ProjectReunion::factory_implementation
         ULONGLONG m_cachedDischargeTime;
         ::EnergySaverStatus m_cachedEnergySaverStatus;
         CompositeBatteryStatus* m_cachedCompositeBatteryStatus;
-        winrt::Microsoft::ProjectReunion::BatteryStatus m_batteryStatus;
-        winrt::Microsoft::ProjectReunion::BatteryStatus m_oldBatteryStatus { winrt::Microsoft::ProjectReunion::BatteryStatus::NotPresent };
-        winrt::Microsoft::ProjectReunion::PowerSupplyStatus m_powerSupplyStatus;
-        winrt::Microsoft::ProjectReunion::PowerSupplyStatus m_oldPowerSupplyStatus { winrt::Microsoft::ProjectReunion::PowerSupplyStatus::NotPresent };
+        winrt::Microsoft::Windows::System::Power::BatteryStatus m_batteryStatus;
+        winrt::Microsoft::Windows::System::Power::BatteryStatus m_oldBatteryStatus { winrt::Microsoft::Windows::System::Power::BatteryStatus::NotPresent };
+        winrt::Microsoft::Windows::System::Power::PowerSupplyStatus m_powerSupplyStatus;
+        winrt::Microsoft::Windows::System::Power::PowerSupplyStatus m_oldPowerSupplyStatus { winrt::Microsoft::Windows::System::Power::PowerSupplyStatus::NotPresent };
 
         EventType m_EnergySaverStatusChangedEvent;
         EventType m_batteryStatusChangedEvent;
@@ -129,70 +129,70 @@ namespace winrt::Microsoft::ProjectReunion::factory_implementation
         SystemAwayModeStatusRegistration m_systemAwayModeStatusHandle;
 
         PowerFunctionDetails energySaverStatusFunc{
-            &winrt::Microsoft::ProjectReunion::implementation::EnergySaverStatus_Event,
-            &winrt::Microsoft::ProjectReunion::implementation::EnergySaverStatus_Register,
-            &winrt::Microsoft::ProjectReunion::implementation::EnergySaverStatus_Unregister,
-            &winrt::Microsoft::ProjectReunion::implementation::EnergySaverStatus_Update };
+            &winrt::Microsoft::Windows::System::Power::implementation::EnergySaverStatus_Event,
+            &winrt::Microsoft::Windows::System::Power::implementation::EnergySaverStatus_Register,
+            &winrt::Microsoft::Windows::System::Power::implementation::EnergySaverStatus_Unregister,
+            &winrt::Microsoft::Windows::System::Power::implementation::EnergySaverStatus_Update };
 
         PowerFunctionDetails compostieBatteryStatusFunc{
-            &winrt::Microsoft::ProjectReunion::implementation::BatteryStatus_Event,
-            &winrt::Microsoft::ProjectReunion::implementation::BatteryStatus_Register,
-            &winrt::Microsoft::ProjectReunion::implementation::BatteryStatus_Unregister,
-            &winrt::Microsoft::ProjectReunion::implementation::BatteryStatus_Update };
+            &winrt::Microsoft::Windows::System::Power::implementation::BatteryStatus_Event,
+            &winrt::Microsoft::Windows::System::Power::implementation::BatteryStatus_Register,
+            &winrt::Microsoft::Windows::System::Power::implementation::BatteryStatus_Unregister,
+            &winrt::Microsoft::Windows::System::Power::implementation::BatteryStatus_Update };
 
         PowerFunctionDetails powerSupplyStatusFunc{
-            &winrt::Microsoft::ProjectReunion::implementation::PowerSupplyStatus_Event,
-            &winrt::Microsoft::ProjectReunion::implementation::PowerSupplyStatus_Register,
-            &winrt::Microsoft::ProjectReunion::implementation::PowerSupplyStatus_Unregister,
-            &winrt::Microsoft::ProjectReunion::implementation::PowerSupplyStatus_Update };
+            &winrt::Microsoft::Windows::System::Power::implementation::PowerSupplyStatus_Event,
+            &winrt::Microsoft::Windows::System::Power::implementation::PowerSupplyStatus_Register,
+            &winrt::Microsoft::Windows::System::Power::implementation::PowerSupplyStatus_Unregister,
+            &winrt::Microsoft::Windows::System::Power::implementation::PowerSupplyStatus_Update };
 
         PowerFunctionDetails remainingChargePercentFunc{
-            &winrt::Microsoft::ProjectReunion::implementation::RemainingChargePercent_Event,
-            &winrt::Microsoft::ProjectReunion::implementation::RemainingChargePercent_Register,
-            &winrt::Microsoft::ProjectReunion::implementation::RemainingChargePercent_Unregister,
-            &winrt::Microsoft::ProjectReunion::implementation::RemainingChargePercent_Update };
+            &winrt::Microsoft::Windows::System::Power::implementation::RemainingChargePercent_Event,
+            &winrt::Microsoft::Windows::System::Power::implementation::RemainingChargePercent_Register,
+            &winrt::Microsoft::Windows::System::Power::implementation::RemainingChargePercent_Unregister,
+            &winrt::Microsoft::Windows::System::Power::implementation::RemainingChargePercent_Update };
 
         PowerFunctionDetails remainingDischargeTimeFunc{
-            &winrt::Microsoft::ProjectReunion::implementation::RemainingDischargeTime_Event,
-            &winrt::Microsoft::ProjectReunion::implementation::RemainingDischargeTime_Register,
-            &winrt::Microsoft::ProjectReunion::implementation::RemainingDischargeTime_Unregister,
-            &winrt::Microsoft::ProjectReunion::implementation::RemainingDischargeTime_Update };
+            &winrt::Microsoft::Windows::System::Power::implementation::RemainingDischargeTime_Event,
+            &winrt::Microsoft::Windows::System::Power::implementation::RemainingDischargeTime_Register,
+            &winrt::Microsoft::Windows::System::Power::implementation::RemainingDischargeTime_Unregister,
+            &winrt::Microsoft::Windows::System::Power::implementation::RemainingDischargeTime_Update };
 
         PowerFunctionDetails powerSourceStatusFunc{
-            &winrt::Microsoft::ProjectReunion::implementation::PowerSourceStatus_Event,
-            &winrt::Microsoft::ProjectReunion::implementation::PowerSourceStatus_Register,
-            &winrt::Microsoft::ProjectReunion::implementation::PowerSourceStatus_Unregister,
-            &winrt::Microsoft::ProjectReunion::implementation::PowerSourceStatus_Update };
+            &winrt::Microsoft::Windows::System::Power::implementation::PowerSourceStatus_Event,
+            &winrt::Microsoft::Windows::System::Power::implementation::PowerSourceStatus_Register,
+            &winrt::Microsoft::Windows::System::Power::implementation::PowerSourceStatus_Unregister,
+            &winrt::Microsoft::Windows::System::Power::implementation::PowerSourceStatus_Update };
 
         PowerFunctionDetails displayStatusFunc{
-            &winrt::Microsoft::ProjectReunion::implementation::DisplayStatus_Event,
-            &winrt::Microsoft::ProjectReunion::implementation::DisplayStatus_Register,
-            &winrt::Microsoft::ProjectReunion::implementation::DisplayStatus_Unregister,
-            &winrt::Microsoft::ProjectReunion::implementation::DisplayStatus_Update };
+            &winrt::Microsoft::Windows::System::Power::implementation::DisplayStatus_Event,
+            &winrt::Microsoft::Windows::System::Power::implementation::DisplayStatus_Register,
+            &winrt::Microsoft::Windows::System::Power::implementation::DisplayStatus_Unregister,
+            &winrt::Microsoft::Windows::System::Power::implementation::DisplayStatus_Update };
 
         PowerFunctionDetails systemIdleStatusFunc{
-            &winrt::Microsoft::ProjectReunion::implementation::SystemIdleStatus_Event,
-            &winrt::Microsoft::ProjectReunion::implementation::SystemIdleStatus_Register,
-            &winrt::Microsoft::ProjectReunion::implementation::SystemIdleStatus_Unregister,
-            &winrt::Microsoft::ProjectReunion::implementation::NoOperation };
+            &winrt::Microsoft::Windows::System::Power::implementation::SystemIdleStatus_Event,
+            &winrt::Microsoft::Windows::System::Power::implementation::SystemIdleStatus_Register,
+            &winrt::Microsoft::Windows::System::Power::implementation::SystemIdleStatus_Unregister,
+            &winrt::Microsoft::Windows::System::Power::implementation::NoOperation };
 
         PowerFunctionDetails powerSchemePersonalityFunc{
-            &winrt::Microsoft::ProjectReunion::implementation::PowerSchemePersonality_Event,
-            &winrt::Microsoft::ProjectReunion::implementation::PowerSchemePersonality_Register,
-            &winrt::Microsoft::ProjectReunion::implementation::PowerSchemePersonality_Unregister,
-            &winrt::Microsoft::ProjectReunion::implementation::PowerSchemePersonality_Update };
+            &winrt::Microsoft::Windows::System::Power::implementation::PowerSchemePersonality_Event,
+            &winrt::Microsoft::Windows::System::Power::implementation::PowerSchemePersonality_Register,
+            &winrt::Microsoft::Windows::System::Power::implementation::PowerSchemePersonality_Unregister,
+            &winrt::Microsoft::Windows::System::Power::implementation::PowerSchemePersonality_Update };
 
         PowerFunctionDetails userPresenceStatusFunc{
-            &winrt::Microsoft::ProjectReunion::implementation::UserPresenceStatus_Event,
-            &winrt::Microsoft::ProjectReunion::implementation::UserPresenceStatus_Register,
-            &winrt::Microsoft::ProjectReunion::implementation::UserPresenceStatus_Unregister,
-            &winrt::Microsoft::ProjectReunion::implementation::UserPresenceStatus_Update };
+            &winrt::Microsoft::Windows::System::Power::implementation::UserPresenceStatus_Event,
+            &winrt::Microsoft::Windows::System::Power::implementation::UserPresenceStatus_Register,
+            &winrt::Microsoft::Windows::System::Power::implementation::UserPresenceStatus_Unregister,
+            &winrt::Microsoft::Windows::System::Power::implementation::UserPresenceStatus_Update };
 
         PowerFunctionDetails systemAwayModeStatusFunc{
-            &winrt::Microsoft::ProjectReunion::implementation::SystemAwayModeStatus_Event,
-            &winrt::Microsoft::ProjectReunion::implementation::SystemAwayModeStatus_Register,
-            &winrt::Microsoft::ProjectReunion::implementation::SystemAwayModeStatus_Unregister,
-            &winrt::Microsoft::ProjectReunion::implementation::SystemAwayModeStatus_Update };
+            &winrt::Microsoft::Windows::System::Power::implementation::SystemAwayModeStatus_Event,
+            &winrt::Microsoft::Windows::System::Power::implementation::SystemAwayModeStatus_Register,
+            &winrt::Microsoft::Windows::System::Power::implementation::SystemAwayModeStatus_Unregister,
+            &winrt::Microsoft::Windows::System::Power::implementation::SystemAwayModeStatus_Update };
 
         bool RegisteredForEvents(EventType const& eventObj)
         {
@@ -238,10 +238,10 @@ namespace winrt::Microsoft::ProjectReunion::factory_implementation
 
 
         // EnergySaverStatus Functions
-        winrt::Microsoft::ProjectReunion::EnergySaverStatus EnergySaverStatus()
+        winrt::Microsoft::Windows::System::Power::EnergySaverStatus EnergySaverStatus()
         {
             CheckRegistrationAndOrUpdateValue(energySaverStatusFunc);
-            return static_cast<winrt::Microsoft::ProjectReunion::EnergySaverStatus>(m_cachedEnergySaverStatus);
+            return static_cast<winrt::Microsoft::Windows::System::Power::EnergySaverStatus>(m_cachedEnergySaverStatus);
         }
 
         event_token EnergySaverStatusChanged(PowerEventHandle const& handler)
@@ -352,7 +352,7 @@ namespace winrt::Microsoft::ProjectReunion::factory_implementation
             }
         }
 
-        winrt::Microsoft::ProjectReunion::BatteryStatus BatteryStatus()
+        winrt::Microsoft::Windows::System::Power::BatteryStatus BatteryStatus()
         {
             CheckRegistrationAndOrUpdateValue(compostieBatteryStatusFunc);
             return m_batteryStatus;
@@ -376,7 +376,7 @@ namespace winrt::Microsoft::ProjectReunion::factory_implementation
 
 
         // PowerSupplyStatus Functions
-        winrt::Microsoft::ProjectReunion::PowerSupplyStatus PowerSupplyStatus()
+        winrt::Microsoft::Windows::System::Power::PowerSupplyStatus PowerSupplyStatus()
         {
             CheckRegistrationAndOrUpdateValue(compostieBatteryStatusFunc);
             return m_powerSupplyStatus;
@@ -436,10 +436,10 @@ namespace winrt::Microsoft::ProjectReunion::factory_implementation
 
 
         // PowerSourceStatus Functions
-        winrt::Microsoft::ProjectReunion::PowerSourceStatus PowerSourceStatus()
+        winrt::Microsoft::Windows::System::Power::PowerSourceStatus PowerSourceStatus()
         {
             CheckRegistrationAndOrUpdateValue(powerSourceStatusFunc);
-            return static_cast<winrt::Microsoft::ProjectReunion::PowerSourceStatus>(m_cachedPowerSourceStatus);
+            return static_cast<winrt::Microsoft::Windows::System::Power::PowerSourceStatus>(m_cachedPowerSourceStatus);
         }
 
         event_token PowerSourceStatusChanged(PowerEventHandle const& handler)
@@ -460,10 +460,10 @@ namespace winrt::Microsoft::ProjectReunion::factory_implementation
 
 
         // DisplayStatus Functions
-        winrt::Microsoft::ProjectReunion::DisplayStatus DisplayStatus()
+        winrt::Microsoft::Windows::System::Power::DisplayStatus DisplayStatus()
         {
             CheckRegistrationAndOrUpdateValue(displayStatusFunc);
-            return static_cast<winrt::Microsoft::ProjectReunion::DisplayStatus>(m_cachedDisplayStatus);
+            return static_cast<winrt::Microsoft::Windows::System::Power::DisplayStatus>(m_cachedDisplayStatus);
         }
 
         event_token DisplayStatusChanged(PowerEventHandle const& handler)
@@ -484,7 +484,7 @@ namespace winrt::Microsoft::ProjectReunion::factory_implementation
 
 
         // SystemIdleStatus Functions
-        winrt::Microsoft::ProjectReunion::SystemIdleStatus SystemIdleStatus()
+        winrt::Microsoft::Windows::System::Power::SystemIdleStatus SystemIdleStatus()
         {
             // PReview: Should this be the default value?
             // We expect a persistently-queryable value, but
@@ -510,7 +510,7 @@ namespace winrt::Microsoft::ProjectReunion::factory_implementation
 
 
         // PowerSchemePersonality Functions
-        winrt::Microsoft::ProjectReunion::PowerSchemePersonality PowerSchemePersonality()
+        winrt::Microsoft::Windows::System::Power::PowerSchemePersonality PowerSchemePersonality()
         {
             CheckRegistrationAndOrUpdateValue(powerSchemePersonalityFunc);
             if (m_cachedPowerSchemePersonality == GUID_MAX_POWER_SAVINGS)
@@ -546,10 +546,10 @@ namespace winrt::Microsoft::ProjectReunion::factory_implementation
 
 
         // UserPresenceStatus Functions
-        winrt::Microsoft::ProjectReunion::UserPresenceStatus UserPresenceStatus()
+        winrt::Microsoft::Windows::System::Power::UserPresenceStatus UserPresenceStatus()
         {
             CheckRegistrationAndOrUpdateValue(userPresenceStatusFunc);
-            return static_cast<winrt::Microsoft::ProjectReunion::UserPresenceStatus>(m_cachedUserPresenceStatus);
+            return static_cast<winrt::Microsoft::Windows::System::Power::UserPresenceStatus>(m_cachedUserPresenceStatus);
         }
 
         event_token UserPresenceStatusChanged(PowerEventHandle const& handler)
@@ -570,10 +570,10 @@ namespace winrt::Microsoft::ProjectReunion::factory_implementation
 
 
         // SystemAwayModeStatus Functions
-        winrt::Microsoft::ProjectReunion::SystemAwayModeStatus SystemAwayModeStatus()
+        winrt::Microsoft::Windows::System::Power::SystemAwayModeStatus SystemAwayModeStatus()
         {
             CheckRegistrationAndOrUpdateValue(systemAwayModeStatusFunc);
-            return static_cast<winrt::Microsoft::ProjectReunion::SystemAwayModeStatus>(m_cachedSystemAwayModeStatus);
+            return static_cast<winrt::Microsoft::Windows::System::Power::SystemAwayModeStatus>(m_cachedSystemAwayModeStatus);
         }
 
         event_token SystemAwayModeStatusChanged(PowerEventHandle const& handler)
@@ -597,7 +597,7 @@ namespace winrt::Microsoft::ProjectReunion::factory_implementation
 
 };
 
-namespace winrt::Microsoft::ProjectReunion::implementation
+namespace winrt::Microsoft::Windows::System::Power::implementation
 {
 
      struct PowerManager
@@ -605,17 +605,17 @@ namespace winrt::Microsoft::ProjectReunion::implementation
         PowerManager() = default;
 
         //Get function forwards
-        static winrt::Microsoft::ProjectReunion::EnergySaverStatus EnergySaverStatus()
+        static winrt::Microsoft::Windows::System::Power::EnergySaverStatus EnergySaverStatus()
         {
             return make_self<factory_implementation::PowerManager>()->EnergySaverStatus();
         }
 
-        static winrt::Microsoft::ProjectReunion::BatteryStatus BatteryStatus()
+        static winrt::Microsoft::Windows::System::Power::BatteryStatus BatteryStatus()
         {
             return make_self<factory_implementation::PowerManager>()->BatteryStatus();
         }
 
-        static winrt::Microsoft::ProjectReunion::PowerSupplyStatus PowerSupplyStatus()
+        static winrt::Microsoft::Windows::System::Power::PowerSupplyStatus PowerSupplyStatus()
         {
             return make_self<factory_implementation::PowerManager>()->PowerSupplyStatus();
         }
@@ -630,32 +630,32 @@ namespace winrt::Microsoft::ProjectReunion::implementation
             return make_self<factory_implementation::PowerManager>()->RemainingDischargeTime();
         }
 
-        static winrt::Microsoft::ProjectReunion::PowerSourceStatus PowerSourceStatus()
+        static winrt::Microsoft::Windows::System::Power::PowerSourceStatus PowerSourceStatus()
         {
             return make_self<factory_implementation::PowerManager>()->PowerSourceStatus();
         }
 
-        static winrt::Microsoft::ProjectReunion::DisplayStatus DisplayStatus()
+        static winrt::Microsoft::Windows::System::Power::DisplayStatus DisplayStatus()
         {
             return make_self<factory_implementation::PowerManager>()->DisplayStatus();
         }
 
-        static winrt::Microsoft::ProjectReunion::SystemIdleStatus SystemIdleStatus()
+        static winrt::Microsoft::Windows::System::Power::SystemIdleStatus SystemIdleStatus()
         {
             return make_self<factory_implementation::PowerManager>()->SystemIdleStatus();
         }
 
-        static winrt::Microsoft::ProjectReunion::PowerSchemePersonality PowerSchemePersonality()
+        static winrt::Microsoft::Windows::System::Power::PowerSchemePersonality PowerSchemePersonality()
         {
             return make_self<factory_implementation::PowerManager>()->PowerSchemePersonality();
         }
 
-        static winrt::Microsoft::ProjectReunion::UserPresenceStatus UserPresenceStatus()
+        static winrt::Microsoft::Windows::System::Power::UserPresenceStatus UserPresenceStatus()
         {
             return make_self<factory_implementation::PowerManager>()->UserPresenceStatus();
         }
 
-        static winrt::Microsoft::ProjectReunion::SystemAwayModeStatus SystemAwayModeStatus()
+        static winrt::Microsoft::Windows::System::Power::SystemAwayModeStatus SystemAwayModeStatus()
         {
             return make_self<factory_implementation::PowerManager>()->SystemAwayModeStatus();
         }

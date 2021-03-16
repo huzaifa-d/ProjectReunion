@@ -4,9 +4,9 @@
 #include <pch.h>
 #include <PowerNotifications.h>
 #include <PowerNotificationsPal.h>
-#include <PowerManager.g.cpp>
+#include <Microsoft.Windows.System.Power.PowerManager.g.cpp>
 
-namespace winrt::Microsoft::ProjectReunion::implementation
+namespace winrt::Microsoft::Windows::System::Power::implementation
 {
     auto factory = make_self<factory_implementation::PowerManager>();
 
